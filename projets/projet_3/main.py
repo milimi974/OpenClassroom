@@ -31,12 +31,12 @@ class Map:
                 for column, cell in enumerate(line_list):  
                     self.make_cell(row,column,cell)
                 row += 1
-       # self.__make_items()
+        self.__make_items()
         
     
     # Methode public change cell value
     def make_cell(self,row,column,item): 
-        self.map[row][column] = item
+        self.map[row][column] = str(item)
 
     # Methode public check element on a position
     def read_cell(self,row,column):
