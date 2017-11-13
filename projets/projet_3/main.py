@@ -10,6 +10,7 @@ class Map:
     CELL_HEIGHT = 21 # Grid cell Height
     MAP_ITEMS = ["5","6","7"]
     MAP_SPRITE = {}
+    ITEMS_SPACE = 2 # Distance between items
 
     # Constructor
     def __init__(self,screen_width,screen_height):
@@ -58,6 +59,10 @@ class Map:
                 if image:
                     screen.blit(image,(self.map_x + (col * self.CELL_WIDTH),self.map_y +(row * self.CELL_HEIGHT)))
     
+    # Methode public update map before draw
+    def update(self):
+        pass
+
     # Methode public read sprite message to display
     def read_message(self,cell):
         if str(cell) in self.MAP_SPRITE:
@@ -75,15 +80,28 @@ class Map:
 
     # Methode private set items on map
     def __make_items(self):
+        rand_values=[];
         for item in self.MAP_ITEMS:
             item_add = False
             while not item_add:
                 row = randrange(0, self.MAP_ROW)
                 col = randrange(0, self.MAP_COLUMN)
                 cell = self.read_cell(row,col)
-                if(cell == "0"):
+                if(cell == "0" and self.__can_draw_item(rand_values,row,col)):
                     self.make_cell(row,col,item)
+                    rand_values.append((col,row))
                     item_add = True
+
+    # Methode private difined if items can be draw
+    def __can_draw_item(self,rand_values,row,col):
+        can = True
+        for val in rand_values:
+            x,y = val
+            if (x > col-self.ITEMS_SPACE and x < col+self.ITEMS_SPACE) or (y > row-self.ITEMS_SPACE and y < row+self.ITEMS_SPACE): 
+                can = False
+                break
+        return can
+
 
     # Methode private loading sprite json file
     def __load_sprite(self):
@@ -119,6 +137,17 @@ class Hero:
     def draw(self,screen):        
         screen.blit(self.image,(self.map_x + (self.x * self.SPRITE_WIDTH),self.map_y + (self.y * self.SPRITE_HEIGHT)))  
 
+    # Methode public update user status
+    def update(self,x,y):        
+        self.__move(x,y)
+
+    # Methode private change user position
+    def __move(self,x,y):
+        self.x += x
+        self.y += y
+
+
+
 class GameController:
 
     # Settings variable
@@ -126,6 +155,7 @@ class GameController:
     SCREEN_HEIGHT = 480 # Game screen height size
     GAME_CLOSED = False # Game status
     GAME_SCREEN_NAME = "MacGyver Escape RoOm" # Game screen name
+    GAME_SCREEN_BACKGROUND = (0,0,0) # Game screen background color
     
     def __init__(self):
         pygame.init() # Pygame initialization
@@ -146,20 +176,27 @@ class GameController:
         # Loop execute game until game_closed are false
         while not self.GAME_CLOSED:            
             self.__gamepad()
-            self.__upload()
+            self.__update()
+            self.screen.fill(self.GAME_SCREEN_BACKGROUND)
             self.__draw()
+            # self.__draw_message()
             pygame.display.update() # Pygame windows refresh 
 
         self.__quit();    
 
     # Method private contains actions to do every frame
-    def __upload(self):
-        pass
+    def __update(self):
+        self.map.update()
+        self.hero.update(self.move_x,self.move_y)
 
     # Method private contain actions to do before display in screen
     def __draw(self):
         self.map.draw(self.screen)
         self.hero.draw(self.screen)
+
+    # Method private display a message on screen 
+    def __draw_message(self,message):
+        pass
 
     # Method private for keyboard actions
     def __gamepad(self):
@@ -169,15 +206,16 @@ class GameController:
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # If user clic on cross windows
-                self.GAME_CLOSED = True # exit game            
-            if event.type == pygame.K_LEFT: # User clic left
-                self.move_x = -1
-            if event.type == pygame.K_RIGHT: # User clic right
-                self.move_x = 1
-            if event.type == pygame.K_UP: # User clic up
-                self.move_y = -1
-            if event.type == pygame.K_DOWN: # User clic down
-                self.move_y = 1
+                self.GAME_CLOSED = True # exit game         
+            if event.type == pygame.KEYDOWN: # User clic a touch  
+                if event.key == pygame.K_LEFT: # User clic left
+                    self.move_x = -1
+                elif event.key  == pygame.K_RIGHT: # User clic right
+                    self.move_x = 1
+                elif event.key  == pygame.K_UP: # User clic up
+                    self.move_y = -1
+                elif event.key  == pygame.K_DOWN: # User clic down
+                    self.move_y = 1
 
     # Method private for leaved game
     def __quit(self):
