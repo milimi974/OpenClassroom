@@ -12,22 +12,23 @@ class Map:
     MAP_SPRITE = {}
 
     # Constructor
-    def __init__(self):
+    def __init__(self,screen_width,screen_height):
         # init map list
         self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
         self.__load_sprite()
         self.load_map(1)
-        
-    
+        # Centred map in game screen
+        self.map_x = (screen_width - (self.MAP_COLUMN * self.CELL_WIDTH))/2 
+        self.map_y = (screen_height - (self.MAP_ROW * self.CELL_HEIGHT))/2 
+
     # Methode public for create a new map
     def load_map(self,map):
         map_filename = "level_"+str(map)+".txt"
         with open(map_filename, "r") as f:            
             row = 0
             for line in f:
-                line_list = ast.literal_eval(line)
-                for cell in line_list:
-                    column = line_list.index(cell)
+                line_list = ast.literal_eval(line)                
+                for column, cell in enumerate(line_list):  
                     self.make_cell(row,column,cell)
                 row += 1
        # self.__make_items()
@@ -43,12 +44,12 @@ class Map:
 
     # Methode public drawing the map
     def draw(self,screen):
-        for row in range(0,self.MAP_ROW):
-            for col in range(0,self.MAP_COLUMN): 
+        for col in range(0,self.MAP_ROW):
+            for row in range(0,self.MAP_COLUMN): 
                 cell = self.read_cell(row,col)
                 image = self.__make_image(cell)
                 if image:
-                    screen.blit(image,(row * self.CELL_WIDTH,col * self.CELL_HEIGHT))
+                    screen.blit(image,(self.map_x + (row * self.CELL_WIDTH),self.map_y +(col * self.CELL_HEIGHT)))
     
     # Methode public read sprite message to display
     def read_message(self,cell):
@@ -58,11 +59,12 @@ class Map:
         return False
 
     # Methode private get image with is key 
-    def __make_image(self,cell):  
+    def __make_image(self,cell):          
         if str(cell) in self.MAP_SPRITE:
             sprite = self.MAP_SPRITE[str(cell)]['image']
             return pygame.image.load(sprite)
         return False
+       
 
     # Methode private set items on map
     def __make_items(self):
@@ -71,9 +73,9 @@ class Map:
             while not item_add:
                 row = randrange(0, self.MAP_ROW)
                 col = randrange(0, self.MAP_COLUMN)
-                cell = self.get_cell(row,col)
+                cell = self.read_cell(row,col)
                 if(cell == "0"):
-                    self.set_cell(row,col,item)
+                    self.make_cell(row,col,item)
                     item_add = True
 
     # Methode private loading sprite json file
@@ -102,7 +104,7 @@ class GameController:
 
         self.move_x = 0
         self.move_y = 0
-        self.map = Map() # Instanciate Map
+        self.map = Map(self.SCREEN_WIDTH,self.SCREEN_HEIGHT) # Instanciate Map
 
     def game_start(self):
         # Loop execute game until game_closed are false
