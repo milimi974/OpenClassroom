@@ -10,7 +10,7 @@ Code de correspondance pour chaque celulle:
 -1: Way out
 0 : Free path
 1 : Wall
-2 : Hero
+2 : Hero start position
 3 : Boss
 
 5 : Item 1

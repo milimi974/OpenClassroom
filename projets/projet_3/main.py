@@ -15,11 +15,15 @@ class Map:
     def __init__(self,screen_width,screen_height):
         # init map list
         self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
-        self.__load_sprite()
-        self.load_map(1)
+       
         # Centred map in game screen
         self.map_x = (screen_width - (self.MAP_COLUMN * self.CELL_WIDTH))/2 
         self.map_y = (screen_height - (self.MAP_ROW * self.CELL_HEIGHT))/2 
+        self.spawn_point_x = 0
+        self.spawn_point_y = 0
+
+        self.__load_sprite()
+        self.load_map(1)
 
     # Methode public for create a new map
     def load_map(self,map):
@@ -30,6 +34,9 @@ class Map:
                 line_list = ast.literal_eval(line)                
                 for column, cell in enumerate(line_list):  
                     self.make_cell(row,column,cell)
+                    if(str(cell) == "2"):                        
+                        self.spawn_point_x = column
+                        self.spawn_point_y = row
                 row += 1
         self.__make_items()
         
@@ -82,7 +89,35 @@ class Map:
     def __load_sprite(self):
         with open('sprites.json') as data_file:    
             self.MAP_SPRITE = json.load(data_file)
-        
+
+    # Property return hero spawn point
+    @property
+    def spawn_point(self):
+        return (self.spawn_point_x,self.spawn_point_y)
+
+    # Property return Map position
+    @property
+    def map_position(self):
+        return (self.map_x,self.map_y)
+
+
+class Hero:
+    # Defined hero sprite
+    SPRITE = "./assets/hero.png"
+    SPRITE_WIDTH = 21 # Sprite Width
+    SPRITE_HEIGHT = 21 # Sprite Height
+
+    def __init__(self,name,spawn_position,map_position):
+        self.name = name
+        self.spawn_position = spawn_position
+        print(spawn_position,map_position)
+        self.x, self.y = spawn_position
+        self.map_x,self.map_y = map_position
+        self.image = pygame.image.load(self.SPRITE)
+
+    # Methode public drawing the hero on map
+    def draw(self,screen):        
+        screen.blit(self.image,(self.map_x + (self.x * self.SPRITE_WIDTH),self.map_y + (self.y * self.SPRITE_HEIGHT)))  
 
 class GameController:
 
@@ -105,6 +140,7 @@ class GameController:
         self.move_x = 0
         self.move_y = 0
         self.map = Map(self.SCREEN_WIDTH,self.SCREEN_HEIGHT) # Instanciate Map
+        self.hero = Hero("Mc Guyver",self.map.spawn_point,self.map.map_position)
 
     def game_start(self):
         # Loop execute game until game_closed are false
@@ -123,7 +159,7 @@ class GameController:
     # Method private contain actions to do before display in screen
     def __draw(self):
         self.map.draw(self.screen)
-        
+        self.hero.draw(self.screen)
 
     # Method private for keyboard actions
     def __gamepad(self):
