@@ -150,7 +150,10 @@ class Hero:
     @property
     def hero_position(self):
         return (self.x,self.y)
-
+    
+    @property
+    def hero_name(self):
+        return self.name
 
 
 class GameController:
@@ -161,6 +164,7 @@ class GameController:
     GAME_CLOSED = False # Game status
     GAME_SCREEN_NAME = "MacGyver Escape RoOm" # Game screen name
     GAME_SCREEN_BACKGROUND = (0,0,0) # Game screen background color
+    MESSAGE = "" # Message to show on screen
     
     def __init__(self):
         pygame.init() # Pygame initialization
@@ -176,6 +180,8 @@ class GameController:
         self.move_y = 0
         self.map = Map(self.SCREEN_WIDTH,self.SCREEN_HEIGHT) # Instanciate Map
         self.hero = Hero("Mc Guyver",self.map.spawn_point,self.map.map_position)
+        self.key_door = False
+        self.items = []
 
     def game_start(self):
         # Loop execute game until game_closed are false
@@ -184,7 +190,7 @@ class GameController:
             self.__update()
             self.screen.fill(self.GAME_SCREEN_BACKGROUND)
             self.__draw()
-            # self.__draw_message()
+            self.__draw_message()
             pygame.display.update() # Pygame windows refresh 
 
         self.__quit();    
@@ -197,8 +203,7 @@ class GameController:
     
     # Method private use for detect collision
     def __update_collision(self):
-        x,y = self.hero.hero_position
-        cell = self.map.read_cell(y+self.move_y,x+self.move_x)
+        cell = self.map.read_cell(*self.next_position)
         if(cell != "0"):
             self.__event_collision(cell)
 
@@ -208,14 +213,41 @@ class GameController:
             self.move_x = 0
             self.move_y = 0
 
+        elif cell == "9":
+            if self.key_door == True:
+               self.MESSAGE = "a ouvert la porte."
+               self.map.make_cell(*self.next_position,"0")
+            else:
+                self.MESSAGE = self.map.read_message(cell)
+                self.move_x = 0
+                self.move_y = 0
+
+        elif cell == "8":
+            self.MESSAGE = self.map.read_message(cell)
+            self.map.make_cell(*self.next_position,"0")
+            self.key_door = True
+
+    # Property return next position of hero on map
+    @property
+    def next_position(self):
+        x,y = self.hero.hero_position
+        return(y+self.move_y,x+self.move_x)
+
     # Method private contain actions to do before display in screen
     def __draw(self):
         self.map.draw(self.screen)
         self.hero.draw(self.screen)
 
     # Method private display a message on screen 
-    def __draw_message(self,message):
-        pass
+    def __draw_message(self):
+        if self.MESSAGE:
+            message = self.hero.hero_name+" "+self.MESSAGE
+            Font = pygame.font.Font(None,20)
+            text_surface = Font.render(message,True,(0,128,255))
+            rect_text = text_surface.get_rect()
+            rect_text.center = self.map.map_x*2,self.map.map_y-25
+            self.screen.blit(text_surface,rect_text)
+
 
     # Method private for keyboard actions
     def __gamepad(self):

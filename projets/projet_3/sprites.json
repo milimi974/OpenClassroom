@@ -1,34 +1,34 @@
-{
+﻿{
   "-1": {
     "image": "./assets/way_out.png",
-    "gui_message": "a trouv� la sortie."
+    "gui_message": "a trouvé la sortie."
   },
   "1": {
     "image": "./assets/wall.png"
   },
   "3": {
     "image": "./assets/boss.png",
-    "gui_message": "a trouv� le Boss."
+    "gui_message": "a trouvé le Boss."
   },
   "5": {
     "image": "./assets/item_1.png",
-    "gui_message": "a trouv� une aiguille."
+    "gui_message": "a trouvé une aiguille."
   },
   "6": {
     "image": "./assets/item_1.png",
-    "gui_message": "a trouv� de l'�ther."
+    "gui_message": "a trouvé de l'éther."
   },
   "7": {
     "image": "./assets/item_1.png",
-    "gui_message": "a trouv� un petit tube en plastique."
+    "gui_message": "a trouvé un petit tube en plastique."
   },
   "8": {
     "image": "./assets/key.png",
-    "gui_message": "a trouv� une cl�e pour ouvrir une porte."
+    "gui_message": "a trouvé une clée pour ouvrir une porte."
   },
   "9": {
     "image": "./assets/door.png",
-    "gui_message": "a trouv� une porte qui a besoin d'une cl�e."
+    "gui_message": "a trouvé une porte qui a besoin d'une clée."
   }
 
 }
