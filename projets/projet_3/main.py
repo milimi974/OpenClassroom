@@ -1,17 +1,24 @@
 import pygame # Import Pygame Module
+import json # Import json module
+import ast # Import ast Module
+from random import randrange
 
 class Map:
-    MAP_COLUMN = 15
-    MAP_ROW = 15
-    MAP_ITEMS = {"5":"Une aiguille","6":"ether","7":"De l'éther","8":"Un petit tube en plastique","9":"Une clée"}
+    MAP_COLUMN = 15 # Grid column size
+    MAP_ROW = 15 # Grid row size
+    CELL_WIDTH = 21 # Grid cell Width
+    CELL_HEIGHT = 21 # Grid cell Height
+    MAP_ITEMS = ["5","6","7"]
+    MAP_SPRITE = {}
 
     # Constructor
-    def __init(self):
+    def __init__(self):
         # init map list
-        self.level = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
-        self.load_map(0)
-        self.__make_items()
-
+        self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
+        self.__load_sprite()
+        self.load_map(1)
+        
+    
     # Methode public for create a new map
     def load_map(self,map):
         map_filename = "level_"+str(map)+".txt"
@@ -21,20 +28,45 @@ class Map:
                 line_list = ast.literal_eval(line)
                 for cell in line_list:
                     column = line_list.index(cell)
-                    self.level[row][column] = cell
+                    self.make_cell(row,column,cell)
                 row += 1
-
+       # self.__make_items()
+        
+    
     # Methode public change cell value
-    def set_cell(self,row,column,item): 
-        self.level[row][column] = item
+    def make_cell(self,row,column,item): 
+        self.map[row][column] = item
 
     # Methode public check element on a position
-    def get_cell(self,row,column):
-        return self.level[row][column]
+    def read_cell(self,row,column):
+        return self.map[row][column]
+
+    # Methode public drawing the map
+    def draw(self,screen):
+        for row in range(0,self.MAP_ROW):
+            for col in range(0,self.MAP_COLUMN): 
+                cell = self.read_cell(row,col)
+                image = self.__make_image(cell)
+                if image:
+                    screen.blit(image,(row * self.CELL_WIDTH,col * self.CELL_HEIGHT))
     
+    # Methode public read sprite message to display
+    def read_message(self,cell):
+        if str(cell) in self.MAP_SPRITE:
+            if "gui_message" in self.MAP_SPRITE[str(cell)]:
+                return self.MAP_SPRITE[str(cell)]["gui_message"]
+        return False
+
+    # Methode private get image with is key 
+    def __make_image(self,cell):  
+        if str(cell) in self.MAP_SPRITE:
+            sprite = self.MAP_SPRITE[str(cell)]['image']
+            return pygame.image.load(sprite)
+        return False
+
     # Methode private set items on map
     def __make_items(self):
-        for item in self.MAP_ITEMS.keys():
+        for item in self.MAP_ITEMS:
             item_add = False
             while not item_add:
                 row = randrange(0, self.MAP_ROW)
@@ -44,6 +76,11 @@ class Map:
                     self.set_cell(row,col,item)
                     item_add = True
 
+    # Methode private loading sprite json file
+    def __load_sprite(self):
+        with open('sprites.json') as data_file:    
+            self.MAP_SPRITE = json.load(data_file)
+        
 
 class GameController:
 
@@ -73,6 +110,7 @@ class GameController:
             self.__gamepad()
             self.__upload()
             self.__draw()
+            pygame.display.update() # Pygame windows refresh 
 
         self.__quit();    
 
@@ -82,7 +120,8 @@ class GameController:
 
     # Method private contain actions to do before display in screen
     def __draw(self):
-        pass
+        self.map.draw(self.screen)
+        
 
     # Method private for keyboard actions
     def __gamepad(self):
