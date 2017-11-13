@@ -146,6 +146,11 @@ class Hero:
         self.x += x
         self.y += y
 
+    # Attribute return hero position
+    @property
+    def hero_position(self):
+        return (self.x,self.y)
+
 
 
 class GameController:
@@ -186,8 +191,22 @@ class GameController:
 
     # Method private contains actions to do every frame
     def __update(self):
-        self.map.update()
+        self.__update_collision()
+        self.map.update()        
         self.hero.update(self.move_x,self.move_y)
+    
+    # Method private use for detect collision
+    def __update_collision(self):
+        x,y = self.hero.hero_position
+        cell = self.map.read_cell(y+self.move_y,x+self.move_x)
+        if(cell != "0"):
+            self.__event_collision(cell)
+
+    # Methode private event to do on collision
+    def __event_collision(self,cell):
+        if cell == "1":
+            self.move_x = 0
+            self.move_y = 0
 
     # Method private contain actions to do before display in screen
     def __draw(self):
