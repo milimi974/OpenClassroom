@@ -2,6 +2,7 @@ import pygame # Import Pygame Module
 import json # Import json module
 import ast # Import ast Module
 from random import randrange
+import time
 
 class Map:
     MAP_COLUMN = 15 # Grid column size
@@ -55,7 +56,7 @@ class Map:
         for col in range(0,self.MAP_ROW):
             for row in range(0,self.MAP_COLUMN): 
                 cell = self.read_cell(row,col)
-                image = self.__make_image(cell)
+                image = self.make_image(cell)
                 if image:
                     screen.blit(image,(self.map_x + (col * self.CELL_WIDTH),self.map_y +(row * self.CELL_HEIGHT)))
     
@@ -70,8 +71,8 @@ class Map:
                 return self.MAP_SPRITE[str(cell)]["gui_message"]
         return False
 
-    # Methode private get image with is key 
-    def __make_image(self,cell):          
+    # Methode public get image with is key 
+    def make_image(self,cell):          
         if str(cell) in self.MAP_SPRITE:
             sprite = self.MAP_SPRITE[str(cell)]['image']
             return pygame.image.load(sprite)
@@ -105,7 +106,7 @@ class Map:
 
     # Methode private loading sprite json file
     def __load_sprite(self):
-        with open('sprites.json') as data_file:    
+        with open('sprites.json','r',encoding='utf8') as data_file:    
             self.MAP_SPRITE = json.load(data_file)
 
     # Property return hero spawn point
@@ -118,6 +119,10 @@ class Map:
     def map_position(self):
         return (self.map_x,self.map_y)
 
+    # Property return Map items list
+    @property
+    def map_items(self):
+        return self.MAP_ITEMS
 
 class Hero:
     # Defined hero sprite
@@ -164,7 +169,8 @@ class GameController:
     GAME_CLOSED = False # Game status
     GAME_SCREEN_NAME = "MacGyver Escape RoOm" # Game screen name
     GAME_SCREEN_BACKGROUND = (0,0,0) # Game screen background color
-    MESSAGE = "" # Message to show on screen
+    MESSAGE = "" # Message to show on screen    
+    
     
     def __init__(self):
         pygame.init() # Pygame initialization
@@ -182,21 +188,32 @@ class GameController:
         self.hero = Hero("Mc Guyver",self.map.spawn_point,self.map.map_position)
         self.key_door = False
         self.items = []
+        self.game_over = False
+        self.game_end = False
 
     def game_start(self):
         # Loop execute game until game_closed are false
-        while not self.GAME_CLOSED:            
+        while not self.GAME_CLOSED:    
             self.__gamepad()
-            self.__update()
+            self.__update(pygame.time.Clock)
             self.screen.fill(self.GAME_SCREEN_BACKGROUND)
-            self.__draw()
-            self.__draw_message()
+            self.__draw(pygame.time.Clock)
+            self.__draw_message(pygame.time.Clock)
             pygame.display.update() # Pygame windows refresh 
-
+            if self.MESSAGE:
+                time.sleep(0.6)
+                self.MESSAGE=None
+            if self.game_end:
+                self.__game_end(pygame.time.Clock)
         self.__quit();    
 
+    # Method private end game
+    def __game_end(self,dt):     
+        time.sleep(3)
+        self.GAME_CLOSED = True
+
     # Method private contains actions to do every frame
-    def __update(self):
+    def __update(self,dt):
         self.__update_collision()
         self.map.update()        
         self.hero.update(self.move_x,self.move_y)
@@ -209,23 +226,49 @@ class GameController:
 
     # Methode private event to do on collision
     def __event_collision(self,cell):
+        # Event for collision with wall
         if cell == "1":
             self.move_x = 0
             self.move_y = 0
 
+        # Event for collision with door
         elif cell == "9":
             if self.key_door == True:
                self.MESSAGE = "a ouvert la porte."
                self.map.make_cell(*self.next_position,"0")
+               self.key_door = False
+
             else:
                 self.MESSAGE = self.map.read_message(cell)
                 self.move_x = 0
                 self.move_y = 0
 
+        # Event for collision with key
         elif cell == "8":
             self.MESSAGE = self.map.read_message(cell)
             self.map.make_cell(*self.next_position,"0")
             self.key_door = True
+
+        # Event for collision with items
+        elif cell in self.map.map_items:
+            self.MESSAGE = self.map.read_message(cell)
+            self.map.make_cell(*self.next_position,"0")
+            self.items.append(cell)
+
+        # Event for level ended
+        elif cell == "-1":
+            self.game_end = True
+            self.MESSAGE = "Niveau terminé !!!"
+
+        # Event for collision with enemy
+        elif cell == "3":
+            if len(self.items) == 3:
+                self.MESSAGE = self.map.read_message(cell)
+                self.map.make_cell(*self.next_position,"0")                
+
+            else:
+                self.MESSAGE = "a meurt sans pouvoir rien faire ..."                
+                self.game_end = True
 
     # Property return next position of hero on map
     @property
@@ -234,20 +277,38 @@ class GameController:
         return(y+self.move_y,x+self.move_x)
 
     # Method private contain actions to do before display in screen
-    def __draw(self):
+    def __draw(self,dt):
         self.map.draw(self.screen)
         self.hero.draw(self.screen)
+        self.__draw_gui()
 
     # Method private display a message on screen 
-    def __draw_message(self):
+    def __draw_message(self,dt):
+        
         if self.MESSAGE:
             message = self.hero.hero_name+" "+self.MESSAGE
-            Font = pygame.font.Font(None,20)
+            Font = pygame.font.Font(None,30)
             text_surface = Font.render(message,True,(0,128,255))
             rect_text = text_surface.get_rect()
             rect_text.center = self.map.map_x*2,self.map.map_y-25
             self.screen.blit(text_surface,rect_text)
 
+    # Methode private draw gui
+    def __draw_gui(self):
+        img = None
+        if self.key_door:
+            img = self.image = pygame.image.load("./assets/gui_key_on.png")
+        else:
+            img = self.image = pygame.image.load("./assets/gui_key_off.png")
+        x,y = self.map.map_position
+        y -= 21
+
+        self.screen.blit(img,(x,y))  
+        x += 22
+        for item in self.items:
+            img = self.map.make_image(item)
+            self.screen.blit(img,(x,y)) 
+            x += 22
 
     # Method private for keyboard actions
     def __gamepad(self):

@@ -1,4 +1,4 @@
-﻿{
+{
   "-1": {
     "image": "./assets/way_out.png",
     "gui_message": "a trouvé la sortie."
@@ -8,7 +8,7 @@
   },
   "3": {
     "image": "./assets/boss.png",
-    "gui_message": "a trouvé le Boss."
+    "gui_message": "a endormi le garde."
   },
   "5": {
     "image": "./assets/item_1.png",
