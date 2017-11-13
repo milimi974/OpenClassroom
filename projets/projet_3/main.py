@@ -49,7 +49,7 @@ class Map:
                 cell = self.read_cell(row,col)
                 image = self.__make_image(cell)
                 if image:
-                    screen.blit(image,(self.map_x + (row * self.CELL_WIDTH),self.map_y +(col * self.CELL_HEIGHT)))
+                    screen.blit(image,(self.map_x + (col * self.CELL_WIDTH),self.map_y +(row * self.CELL_HEIGHT)))
     
     # Methode public read sprite message to display
     def read_message(self,cell):
