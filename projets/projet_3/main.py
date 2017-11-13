@@ -3,12 +3,14 @@ import pygame # Import Pygame Module
 class Map:
     MAP_COLUMN = 15
     MAP_ROW = 15
-    MAP_ITEMS = {"Une aiguille":"5","ether":"6","De l'éther":"7","Un petit tube en plastique":"8","Une clée":"9"}
+    MAP_ITEMS = {"5":"Une aiguille","6":"ether","7":"De l'éther","8":"Un petit tube en plastique","9":"Une clée"}
 
     # Constructor
     def __init(self):
         # init map list
         self.level = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
+        self.load_map(0)
+        self.__make_items()
 
     # Methode public for create a new map
     def load_map(self,map):
@@ -29,10 +31,18 @@ class Map:
     # Methode public check element on a position
     def get_cell(self,row,column):
         return self.level[row][column]
+    
     # Methode private set items on map
     def __make_items(self):
-
-   
+        for item in self.MAP_ITEMS.keys():
+            item_add = False
+            while not item_add:
+                row = randrange(0, self.MAP_ROW)
+                col = randrange(0, self.MAP_COLUMN)
+                cell = self.get_cell(row,col)
+                if(cell == "0"):
+                    self.set_cell(row,col,item)
+                    item_add = True
 
 
 class GameController:
@@ -55,6 +65,7 @@ class GameController:
 
         self.move_x = 0
         self.move_y = 0
+        self.map = Map() # Instanciate Map
 
     def game_start(self):
         # Loop execute game until game_closed are false
