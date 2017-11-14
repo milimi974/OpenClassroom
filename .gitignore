@@ -6,3 +6,7 @@
 /.vs
 /projets/.vs
 /projets/projet_3/.vs
+/projets/projet_3/build/main
+/projets/projet_3/__pycache__
+/projets/projet_3/dist/main
+/projets/projet_3/setup.py

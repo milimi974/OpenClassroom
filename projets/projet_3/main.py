@@ -13,7 +13,7 @@ class Map:
     MAP_SPRITE = {}
     ITEMS_SPACE = 2 # Distance between items
 
-    # Constructor
+    # Conuctor
     def __init__(self,screen_width,screen_height):
         # init map list
         self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
@@ -132,8 +132,7 @@ class Hero:
 
     def __init__(self,name,spawn_position,map_position):
         self.name = name
-        self.spawn_position = spawn_position
-        print(spawn_position,map_position)
+        self.spawn_position = spawn_position        
         self.x, self.y = spawn_position
         self.map_x,self.map_y = map_position
         self.image = pygame.image.load(self.SPRITE)
