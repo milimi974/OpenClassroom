@@ -8,7 +8,7 @@ class Map:
     MAP_ROW = 15 # Grid row size
     CELL_WIDTH = 21 # Grid cell Width
     CELL_HEIGHT = 21 # Grid cell Height
-    MAP_ITEMS = ["5","6","7"] # Lis of items ID
+    MAP_ITEMS = ["5", "6", "7"] # Lis of items ID
     MAP_SPRITE = {} # Dictionnary for all map items/object description
     ITEMS_SPACE = 2 # Distance between items
 
@@ -19,6 +19,7 @@ class Map:
         Keyword arguments:
         screen_width -- Integer Pygame screen size width
         screen_height -- Integer Pygame screen size Height
+
         """
 
         # Initialize a list that contains the map data
@@ -41,17 +42,22 @@ class Map:
         
         Keyword arguments:
         map -- Integer Map number
+
         """
         # Create the map filename
-        map_filename = "level_"+str(map)+".txt"
-        # Opening the file    
-        file_list = open(map_filename).read().splitlines()                  
-        row = 0        
+        map_filename = "level_" + str(map) + ".txt"
+        # Opening the file and create a list that contain each line    
+        file_list = open(map_filename).read().splitlines()      
+        # var for identify row position
+        row = 0      
+        # Loop iterate all line
         for line in file_list:
+            # Create a new list that contain all cell value
             line_list = line.split(',') 
+            # Loop for identify the column et and cell value from the list
             for column, cell in enumerate(line_list):  
                 # Set map cell with the new value identify by row and column
-                self.make_cell(row,column,cell)
+                self.make_cell(row, column, cell)
                 # Initialise spawn point position
                 if(str(cell) == "2"):                        
                     self.spawn_point_x = column
@@ -62,97 +68,148 @@ class Map:
         
     
     
-    def make_cell(self,row,column,item): 
-        """ # Change cell value on the map.
+    def make_cell(self, row, column, item): 
+        """ Change cell value on the map.
         
         Keyword arguments:
         row -- Integer Map row position
         column -- Integer Map column position
         cell -- String Map cell value
+
         """
         self.map[row][column] = str(item)
 
-    # Methode public check element on a position
-    def read_cell(self,row,column):
-        """ # Return cell value on the map.
+    def read_cell(self, row, column):
+        """ Return cell value on the map.
         
         Keyword arguments:
         row -- Integer Map row position
         column -- Integer Map column position
+
         """
         return self.map[row][column]
 
-    # Methode public drawing the map
-    def draw(self,screen):
+    
+    def draw(self, screen):
+        """ Draw the map sprite on the screen.
+        
+        Keyword arguments:
+        screen -- Object Screen reference
+
+        """
+        # Loop iterate map list to get back cell value identify by row, column position
         for col in range(0,self.MAP_ROW):
             for row in range(0,self.MAP_COLUMN): 
+                # Read cell value at the row, column position
                 cell = self.read_cell(row,col)
+                # Create an object image from cell value
                 image = self.make_image(cell)
                 if image:
-                    screen.blit(image,(self.map_x + (col * self.CELL_WIDTH),self.map_y +(row * self.CELL_HEIGHT)))
-    
-    # Methode public update map before draw
+                    # Show image on the screen if exist
+                    screen.blit(
+                            image,
+                            (
+                                self.map_x + (col*self.CELL_WIDTH), 
+                                self.map_y + (row*self.CELL_HEIGHT)
+                            ))
+        
     def update(self):
+        """ Update map actions before draw."""
         pass
 
     # Methode public read sprite message to display
-    def read_message(self,cell):
+    def read_message(self, cell):
+        """ Return sprite message to display on screen.
+        
+        Keyword arguments:
+        cell -- integer Cell value 
+
+        """
+        # Identify if message exist on MAP_SPRITE 
         if str(cell) in self.MAP_SPRITE:
             if "gui_message" in self.MAP_SPRITE[str(cell)]:
                 return self.MAP_SPRITE[str(cell)]["gui_message"]
         return False
 
-    # Methode public get image with is key 
-    def make_image(self,cell):          
+    def make_image(self, cell):
+        """ Return an image object for the cell value.
+        
+        Keyword arguments:
+        cell -- integer Cell value 
+
+        """
+        # Identify if cell sprite exist on MAP_SPRITE 
         if str(cell) in self.MAP_SPRITE:
             sprite = self.MAP_SPRITE[str(cell)]['image']
+            # Use pygame for create an image object
             return pygame.image.load(sprite)
         return False
        
 
     # Methode private set items on map
     def __make_items(self):
+        """ Random creation of items on the map."""
+        # List contain tulpes position of already created item
         rand_values=[]
+        # Loop iterate items value
         for item in self.MAP_ITEMS:
+            # Variable for break/stop loop
             item_add = False
+            # Loop execute action until item_add change to True
             while not item_add:
+                # Random a row, column value to 0 at max row,column size 
                 row = randrange(0, self.MAP_ROW)
                 col = randrange(0, self.MAP_COLUMN)
-                cell = self.read_cell(row,col)
+                # Read cell value identify at row, column
+                cell = self.read_cell(row, col)
+                # Check if can create item
                 if(cell == "0" and self.__can_draw_item(rand_values,row,col)):
-                    self.make_cell(row,col,item)
+                    # Create item at row, column
+                    self.make_cell(row, col, item)
+                    # Stock a tuple position of new item 
                     rand_values.append((col,row))
+                    # Exit Loop
                     item_add = True
 
-    # Methode private difined if items can be draw
-    def __can_draw_item(self,rand_values,row,col):
+    def __can_draw_item(self, rand_values, row, col):
+        """ Return if can draw an item.
+        
+        Keyword arguments:
+        rand_values -- List[Tulpe] Existing item
+        row -- Integer Row position on the map
+        col -- Integer Column position on the map
+
+        """
+        # Answer to return
         can = True
+        # Loop iterate existing item position and compare to new one
         for val in rand_values:
             x,y = val
+            # Item can't be created if is position are inside range defined 
             if (x > col-self.ITEMS_SPACE and x < col+self.ITEMS_SPACE) or (y > row-self.ITEMS_SPACE and y < row+self.ITEMS_SPACE): 
                 can = False
                 break
         return can
 
 
-    # Methode private loading sprite json file
     def __load_sprite(self):
-        with open('sprites.json','r',encoding='utf8') as data_file:    
+        """ Load sprite file then initialise sprite object. """
+        with open('sprites.json', 'r', encoding='utf8') as data_file:    
             self.MAP_SPRITE = json.load(data_file)
 
-    # Property return hero spawn point
     @property
     def spawn_point(self):
-        return (self.spawn_point_x,self.spawn_point_y)
+        """ Return Tulpe of spawn point position. """
+        return (self.spawn_point_x, self.spawn_point_y)
 
-    # Property return Map position
     @property
     def map_position(self):
-        return (self.map_x,self.map_y)
+        """ Return Tylpe of map position. """
+        return (self.map_x, self.map_y)
 
-    # Property return Map items list
     @property
     def map_items(self):
+        """ Return List of items list. """
         return self.MAP_ITEMS
 
 class Hero:
@@ -162,37 +219,70 @@ class Hero:
     SPRITE_HEIGHT = 21 # Sprite Height
 
     def __init__(self, name, spawn_position, map_position):
+        """ Initialize the Hero object.
+        
+        Keyword arguments:
+        name -- String Hero name
+        spawn_position -- Tulpe Hero start position
+        map_position -- Tulpe map_position on screen
+
+        """        
         self.name = name
         self.spawn_position = spawn_position        
         self.x, self.y = spawn_position
-        self.map_x,self.map_y = map_position
+        self.map_x, self.map_y = map_position
+        # Initialise Hero sprite image object
         self.image = pygame.image.load(self.SPRITE)
 
-    # Methode public drawing the hero on map
-    def draw(self,screen):        
-        screen.blit(self.image,
-                    (
-                        self.map_x + (self.x * self.SPRITE_WIDTH),
-                        self.map_y + (self.y * self.SPRITE_HEIGHT)
-                     )
-                )  
+    
+    def draw(self, screen):
+        """ Draw Hero on the screen. 
+        
+        Keyword arguments:
+        screen -- Object Screen reference
 
-    # Methode public update user status
-    def update(self, x, y):        
+        """
+        screen.blit(
+                self.image,
+                (
+                    self.map_x + (self.x*self.SPRITE_WIDTH),
+                    self.map_y + (self.y*self.SPRITE_HEIGHT)
+                ))
+
+   
+    def update(self, x, y):
+        """ Update Hero status. 
+        
+        Keyword arguments:
+        x -- Integer Hero x position on map
+        y -- Integer Hero y position on map
+
+        """
+        # Change Hero position to x, y
         self.__move(x, y)
 
-    # Methode private change user position
-    def __move(self,x,y):
+    
+    def __move(self, x, y):
+        """ Move Hero position to x, y. 
+        
+        Keyword arguments:
+        x -- Integer Hero x position on map
+        y -- Integer Hero y position on map
+
+        """
+        # Update Hero current by add new postion value
         self.x += x
         self.y += y
 
-    # Attribute return hero position
+    
     @property
     def hero_position(self):
-        return (self.x,self.y)
+        """ Return Tulpe contain Hero position. """
+        return (self.x, self.y)
     
     @property
     def hero_name(self):
+        """ Return String contain Hero name. """
         return self.name
 
 
@@ -205,9 +295,11 @@ class GameController:
     GAME_SCREEN_NAME = "MacGyver Escape RoOm" # Game screen name
     GAME_SCREEN_BACKGROUND = (0,0,0) # Game screen background color
     MESSAGE = "" # Message to show on screen    
-    
+    MESSAGE_TIME = 0 # Time message appear on screen
+    FPS = 24 # Framerate screen
     
     def __init__(self):
+        """ Initialize the GameController object. """
         pygame.init() # Pygame initialization
         # Create a new window with size 640 x 480 "width x height"
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -216,43 +308,64 @@ class GameController:
 
         # Game keypress action Horizontal x Vertical y
         # value -1 0 1 for x left not move right same for y up not move down
-
         self.move_x = 0
         self.move_y = 0
-        self.map = Map(self.SCREEN_WIDTH,self.SCREEN_HEIGHT) # Instanciate Map
-        self.hero = Hero("Mc Guyver",self.map.spawn_point,self.map.map_position)
-        self.key_door = False
-        self.items = []
-        self.game_over = False
-        self.game_end = False
+        # Instanciate Map
+        self.map = Map(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+        # Instanciate Hero
+        self.hero = Hero("Mc Guyver", self.map.spawn_point, self.map.map_position)
+        # Initialise object attributes
+        self.key_door = False # Bool for statu key found
+        self.items = [] # List contain items found
+        self.game_over = False # Bool statu game hover
+        self.game_end = False # Bool game ending
+        self.clock = pygame.time.Clock() # Initilise object manage game time
+
 
     def game_start(self):
+        """ Launch game Loop. """   
         # Loop execute game until game_closed are false
         while not self.GAME_CLOSED:    
+            # Update clock game time by framerate
+            self.clock.tick(self.FPS)
+            # Call method listen keyboard event
             self.__gamepad()
-            self.__update(pygame.time.Clock)
+            # Method call all object.update() or method to update
+            self.__update(self.clock.get_time())
+            # Refresh screen background color
             self.screen.fill(self.GAME_SCREEN_BACKGROUND)
-            self.__draw(pygame.time.Clock)
-            self.__draw_message(pygame.time.Clock)
-            pygame.display.update() # Pygame windows refresh 
-            if self.MESSAGE:
-                time.sleep(0.6)
-                self.MESSAGE=None
+            # Method updated all object.draw() or method to draw
+            self.__draw(self.clock.get_time())
+            # Pygame windows refresh 
+            pygame.display.update()           
+
             if self.game_end:
-                self.__game_end(pygame.time.Clock)
+                self.__game_end(self.clock.get_time())
         self.__quit();    
 
     # Method private end game
-    def __game_end(self,dt):     
+    def __game_end(self, dt):     
         time.sleep(3)
         self.GAME_CLOSED = True
 
     # Method private contains actions to do every frame
-    def __update(self,dt):
+    def __update(self, dt):
+        #Method call all object.update() or method to update
         self.__update_collision()
         self.map.update()        
         self.hero.update(self.move_x,self.move_y)
-    
+        self.__update_message(dt)
+
+    def __update_message(self,dt):
+        
+
+        if self.MESSAGE:
+            if self.MESSAGE_TIME <= 1000:
+                self.MESSAGE_TIME += dt
+            else:    
+                self.MESSAGE_TIME = 0
+                self.MESSAGE=None
+
     # Method private use for detect collision
     def __update_collision(self):
         cell = self.map.read_cell(*self.next_position)
@@ -316,6 +429,7 @@ class GameController:
         self.map.draw(self.screen)
         self.hero.draw(self.screen)
         self.__draw_gui()
+        self.__draw_message(dt)
 
     # Method private display a message on screen 
     def __draw_message(self,dt):
