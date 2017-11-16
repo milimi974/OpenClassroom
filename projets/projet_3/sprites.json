@@ -11,15 +11,15 @@
     "gui_message": "a endormi le garde."
   },
   "5": {
-    "image": "./assets/item_1.png",
+    "image": "./assets/aiguille.png",
     "gui_message": "a trouvé une aiguille."
   },
   "6": {
-    "image": "./assets/item_1.png",
+    "image": "./assets/ether.png",
     "gui_message": "a trouvé de l'éther."
   },
   "7": {
-    "image": "./assets/item_1.png",
+    "image": "./assets/tube.png",
     "gui_message": "a trouvé un petit tube en plastique."
   },
   "8": {
