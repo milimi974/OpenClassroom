@@ -1,0 +1,13 @@
+################################################################################
+# Ce fichier .gitignore a été automatiquement créé par Microsoft(R) Visual Studio.
+################################################################################
+
+/.idea
+/.vs
+/.vs
+/projet_3/.vs
+/build/main
+/__pycache__
+/dist/main
+/setup.py
+/build

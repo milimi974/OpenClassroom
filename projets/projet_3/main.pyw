@@ -1,19 +1,19 @@
 import pygame # Import Pygame Module
 import json # Import json module
 import ast # Import ast Module
-from random import randrange
-import time
+from random import randrange # Import méthod from random module for make range value
+import time # Import module time for pass game on pause
 
 class Map:
     MAP_COLUMN = 15 # Grid column size
     MAP_ROW = 15 # Grid row size
     CELL_WIDTH = 21 # Grid cell Width
     CELL_HEIGHT = 21 # Grid cell Height
-    MAP_ITEMS = ["5","6","7"]
-    MAP_SPRITE = {}
+    MAP_ITEMS = ["5","6","7"] # Lis of items ID
+    MAP_SPRITE = {} # Dictionnary for all map items/object description
     ITEMS_SPACE = 2 # Distance between items
 
-    # Conuctor
+    
     def __init__(self,screen_width,screen_height):
         # init map list
         self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
@@ -81,7 +81,7 @@ class Map:
 
     # Methode private set items on map
     def __make_items(self):
-        rand_values=[];
+        rand_values=[]
         for item in self.MAP_ITEMS:
             item_add = False
             while not item_add:
@@ -130,7 +130,7 @@ class Hero:
     SPRITE_WIDTH = 21 # Sprite Width
     SPRITE_HEIGHT = 21 # Sprite Height
 
-    def __init__(self,name,spawn_position,map_position):
+    def __init__(self, name, spawn_position, map_position):
         self.name = name
         self.spawn_position = spawn_position        
         self.x, self.y = spawn_position
@@ -139,11 +139,16 @@ class Hero:
 
     # Methode public drawing the hero on map
     def draw(self,screen):        
-        screen.blit(self.image,(self.map_x + (self.x * self.SPRITE_WIDTH),self.map_y + (self.y * self.SPRITE_HEIGHT)))  
+        screen.blit(self.image,
+                    (
+                        self.map_x + (self.x * self.SPRITE_WIDTH),
+                        self.map_y + (self.y * self.SPRITE_HEIGHT)
+                     )
+                )  
 
     # Methode public update user status
-    def update(self,x,y):        
-        self.__move(x,y)
+    def update(self, x, y):        
+        self.__move(x, y)
 
     # Methode private change user position
     def __move(self,x,y):
@@ -266,7 +271,7 @@ class GameController:
                 self.map.make_cell(*self.next_position,"0")                
 
             else:
-                self.MESSAGE = "a meurt sans pouvoir rien faire ..."                
+                self.MESSAGE = "meurt sans pouvoir rien faire ..."                
                 self.game_end = True
 
     # Property return next position of hero on map
