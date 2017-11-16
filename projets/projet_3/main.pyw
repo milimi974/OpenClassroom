@@ -1,6 +1,5 @@
 import pygame # Import Pygame Module
 import json # Import json module
-import ast # Import ast Module
 from random import randrange # Import méthod from random module for make range value
 import time # Import module time for pass game on pause
 
@@ -14,41 +13,73 @@ class Map:
     ITEMS_SPACE = 2 # Distance between items
 
     
-    def __init__(self,screen_width,screen_height):
-        # init map list
+    def __init__(self, screen_width, screen_height):
+        """ Initialize the Map object.
+        
+        Keyword arguments:
+        screen_width -- Integer Pygame screen size width
+        screen_height -- Integer Pygame screen size Height
+        """
+
+        # Initialize a list that contains the map data
         self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
        
         # Centred map in game screen
-        self.map_x = (screen_width - (self.MAP_COLUMN * self.CELL_WIDTH))/2 
-        self.map_y = (screen_height - (self.MAP_ROW * self.CELL_HEIGHT))/2 
+        self.map_x = (screen_width - (self.MAP_COLUMN*self.CELL_WIDTH))/2 
+        self.map_y = (screen_height - (self.MAP_ROW*self.CELL_HEIGHT))/2 
+        # Initialize hero spawn point position
         self.spawn_point_x = 0
         self.spawn_point_y = 0
-
+        # Load map sprite
         self.__load_sprite()
+        # Load the first map
         self.load_map(1)
 
-    # Methode public for create a new map
+    
     def load_map(self,map):
+        """ Initialize a new map.
+        
+        Keyword arguments:
+        map -- Integer Map number
+        """
+        # Create the map filename
         map_filename = "level_"+str(map)+".txt"
-        with open(map_filename, "r") as f:            
-            row = 0
-            for line in f:
-                line_list = ast.literal_eval(line)                
-                for column, cell in enumerate(line_list):  
-                    self.make_cell(row,column,cell)
-                    if(str(cell) == "2"):                        
-                        self.spawn_point_x = column
-                        self.spawn_point_y = row
-                row += 1
+        # Opening the file    
+        file_list = open(map_filename).read().splitlines()                  
+        row = 0        
+        for line in file_list:
+            line_list = line.split(',') 
+            for column, cell in enumerate(line_list):  
+                # Set map cell with the new value identify by row and column
+                self.make_cell(row,column,cell)
+                # Initialise spawn point position
+                if(str(cell) == "2"):                        
+                    self.spawn_point_x = column
+                    self.spawn_point_y = row
+            row += 1
+        # Create all items on map
         self.__make_items()
         
     
-    # Methode public change cell value
+    
     def make_cell(self,row,column,item): 
+        """ # Change cell value on the map.
+        
+        Keyword arguments:
+        row -- Integer Map row position
+        column -- Integer Map column position
+        cell -- String Map cell value
+        """
         self.map[row][column] = str(item)
 
     # Methode public check element on a position
     def read_cell(self,row,column):
+        """ # Return cell value on the map.
+        
+        Keyword arguments:
+        row -- Integer Map row position
+        column -- Integer Map column position
+        """
         return self.map[row][column]
 
     # Methode public drawing the map
