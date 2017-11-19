@@ -5,18 +5,37 @@ import json # Import json module
 
 import pygame # Import Pygame Module
 
-
-
-
-class Map:
-    """ That Class manage map. """
+class ConstClass(object):
+    """ That a class contain all constant for the game. """
+    # Settings constant game map
     MAP_COLUMN = 15 # Grid column size
     MAP_ROW = 15 # Grid row size
     CELL_WIDTH = 21 # Grid cell Width
     CELL_HEIGHT = 21 # Grid cell Height
-    MAP_ITEMS = ["5", "6", "7"] # Lis of items ID
-    MAP_SPRITE = {} # Dictionnary for all map items/object description
+    MAP_ITEMS = ["5", "6", "7"] # Lis of items ID    
     ITEMS_SPACE = 2 # Distance between items
+
+    # Settings constant game hero
+    SPRITE = "./assets/hero.png" # Defined hero sprite
+    SPRITE_WIDTH = 21 # Sprite Width
+    SPRITE_HEIGHT = 21 # Sprite Height
+
+    # Settings constant game screen
+    SCREEN_WIDTH = 640 # Game screen width size
+    SCREEN_HEIGHT = 480 # Game screen height size    
+    GAME_SCREEN_NAME = "MacGyver Escape RoOm" # Game screen name
+    GAME_SCREEN_BACKGROUND = (0, 0, 0) # Game screen background color    
+    FPS = 24 # Framerate screen
+
+    # Override setter to lock value change
+    def __setattr__(self, **kwargs):
+        pass
+
+# Instanciate Object contain all constant
+CONST = ConstClass()
+
+class Map:
+    """ That Class manage map. """    
 
     def __init__(self, screen_width, screen_height):
         """ Initialize the Map object.
@@ -25,15 +44,15 @@ class Map:
         screen_height -- Integer Pygame screen size Height
 
         """
-
         # Initialize a list that contains the map data
-        self.map = [[0 for x in range(self.MAP_COLUMN)] for x in range(self.MAP_ROW)]
+        self.map = [[0 for x in range(CONST.MAP_COLUMN)] for x in range(CONST.MAP_ROW)]
         # Centred map in game screen
-        self.map_x = (screen_width - (self.MAP_COLUMN*self.CELL_WIDTH))/2
-        self.map_y = (screen_height - (self.MAP_ROW*self.CELL_HEIGHT))/2
+        self.map_x = (screen_width - (CONST.MAP_COLUMN*CONST.CELL_WIDTH))/2
+        self.map_y = (screen_height - (CONST.MAP_ROW*CONST.CELL_HEIGHT))/2
         # Initialize hero spawn point position
         self.spawn_point_x = 0
         self.spawn_point_y = 0
+        self.map_sprite = {} # Dictionnary for all map items/object description
         # Load map sprite
         self.__load_sprite()
         # Load the first map
@@ -93,8 +112,8 @@ class Map:
 
         """
         # Loop iterate map list to get back cell value identify by row, column position
-        for col in range(0, self.MAP_ROW):
-            for row in range(0, self.MAP_COLUMN):
+        for col in range(0, CONST.MAP_ROW):
+            for row in range(0, CONST.MAP_COLUMN):
                 # Read cell value at the row, column position
                 cell = self.read_cell(row, col)
                 # Create an object image from cell value
@@ -104,8 +123,8 @@ class Map:
                     screen.blit(
                         image,
                         (
-                            self.map_x + (col*self.CELL_WIDTH),
-                            self.map_y + (row*self.CELL_HEIGHT)
+                            self.map_x + (col*CONST.CELL_WIDTH),
+                            self.map_y + (row*CONST.CELL_HEIGHT)
                         ))
 
     def update(self):
@@ -120,9 +139,9 @@ class Map:
 
         """
         # Identify if message exist on MAP_SPRITE
-        if str(cell) in self.MAP_SPRITE:
-            if "gui_message" in self.MAP_SPRITE[str(cell)]:
-                return self.MAP_SPRITE[str(cell)]["gui_message"]
+        if str(cell) in self.map_sprite:
+            if "gui_message" in self.map_sprite[str(cell)]:
+                return self.map_sprite[str(cell)]["gui_message"]
         return False
 
     def make_image(self, cell):
@@ -131,9 +150,9 @@ class Map:
         cell -- integer Cell value
 
         """
-        # Identify if cell sprite exist on MAP_SPRITE
-        if str(cell) in self.MAP_SPRITE:
-            sprite = self.MAP_SPRITE[str(cell)]['image']
+        # Identify if cell sprite exist on map_sprite
+        if str(cell) in self.map_sprite:
+            sprite = self.map_sprite[str(cell)]['image']
             # Use pygame for create an image object
             return pygame.image.load(sprite)
         return False
@@ -144,14 +163,14 @@ class Map:
         # List contain tulpes position of already created item
         rand_values = []
         # Loop iterate items value
-        for item in self.MAP_ITEMS:
+        for item in CONST.MAP_ITEMS:
             # Variable for break/stop loop
             item_add = False
             # Loop execute action until item_add change to True
             while not item_add:
                 # Random a row, column value to 0 at max row,column size
-                row = randrange(0, self.MAP_ROW)
-                col = randrange(0, self.MAP_COLUMN)
+                row = randrange(0, CONST.MAP_ROW)
+                col = randrange(0, CONST.MAP_COLUMN)
                 # Read cell value identify at row, column
                 cell = self.read_cell(row, col)
                 # Check if can create item
@@ -177,8 +196,8 @@ class Map:
         for val in rand_values:
             x, y = val
             # Item can't be created if is position are inside range defined
-            if (x > col-self.ITEMS_SPACE and x < col+self.ITEMS_SPACE) or\
-               (y > row-self.ITEMS_SPACE and y < row+self.ITEMS_SPACE):
+            if (x > col-CONST.ITEMS_SPACE and x < col+CONST.ITEMS_SPACE) or\
+               (y > row-CONST.ITEMS_SPACE and y < row+CONST.ITEMS_SPACE):
                 can = False
                 break
         return can
@@ -186,7 +205,7 @@ class Map:
     def __load_sprite(self):
         """ Load sprite file then initialise sprite object. """
         with open('sprites.json', 'r', encoding='utf8') as data_file:
-            self.MAP_SPRITE = json.load(data_file)
+            self.map_sprite = json.load(data_file)
 
     @property
     def spawn_point(self):
@@ -201,14 +220,10 @@ class Map:
     @property
     def map_items(self):
         """ Return List of items list. """
-        return self.MAP_ITEMS
+        return CONST.MAP_ITEMS
 
 class Hero:
-    """ That class manage hero. """
-    # Defined hero sprite
-    SPRITE = "./assets/hero.png"
-    SPRITE_WIDTH = 21 # Sprite Width
-    SPRITE_HEIGHT = 21 # Sprite Height
+    """ That class manage hero. """    
 
     def __init__(self, name, spawn_position, map_position):
         """ Initialize the Hero object.
@@ -223,7 +238,7 @@ class Hero:
         self.x, self.y = spawn_position
         self.map_x, self.map_y = map_position
         # Initialise Hero sprite image object
-        self.image = pygame.image.load(self.SPRITE)
+        self.image = pygame.image.load(CONST.SPRITE)
 
     def draw(self, screen):
         """ Draw Hero on the screen.
@@ -234,8 +249,8 @@ class Hero:
         screen.blit(
             self.image,
             (
-                self.map_x + (self.x*self.SPRITE_WIDTH),
-                self.map_y + (self.y*self.SPRITE_HEIGHT)
+                self.map_x + (self.x*CONST.SPRITE_WIDTH),
+                self.map_y + (self.y*CONST.SPRITE_HEIGHT)
             ))
 
     def update(self, x, y):
@@ -270,31 +285,22 @@ class Hero:
         return self.name
 
 class GameController:
-    """ That class are the heart of the game. """
-    # Settings variable
-    SCREEN_WIDTH = 640 # Game screen width size
-    SCREEN_HEIGHT = 480 # Game screen height size
-    GAME_CLOSED = False # Game status
-    GAME_SCREEN_NAME = "MacGyver Escape RoOm" # Game screen name
-    GAME_SCREEN_BACKGROUND = (0, 0, 0) # Game screen background color
-    MESSAGE = "" # Message to show on screen
-    MESSAGE_TIME = 0 # Time message appear on screen
-    FPS = 24 # Framerate screen
+    """ That class are the heart of the game. """    
 
     def __init__(self):
         """ Initialize the GameController object. """
         pygame.init() # Pygame initialization
         # Create a new window with size 640 x 480 "width x height"
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((CONST.SCREEN_WIDTH, CONST.SCREEN_HEIGHT))
         # Set screen name
-        pygame.display.set_caption(self.GAME_SCREEN_NAME)
+        pygame.display.set_caption(CONST.GAME_SCREEN_NAME)
 
         # Game keypress action Horizontal x Vertical y
         # value -1 0 1 for x left not move right same for y up not move down
         self.move_x = 0
         self.move_y = 0
         # Instanciate Map
-        self.map = Map(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+        self.map = Map(CONST.SCREEN_WIDTH, CONST.SCREEN_HEIGHT)
         # Instanciate Hero
         self.hero = Hero("Mc Guyver", self.map.spawn_point, self.map.map_position)
         # Initialise object attributes
@@ -302,20 +308,23 @@ class GameController:
         self.items = [] # List contain items found
         self.game_over = False # Bool statu game hover
         self.game_end = False # Bool game ending
+        self.game_closed = False # Game status
         self.clock = pygame.time.Clock() # Initilise object manage game time
+        self.message = "" # Message to show on screen
+        self.message_time = 0 # Time message appear on screen
 
     def game_start(self):
         """ Launch game Loop. """
         # Main Loop execute game until game_closed are false
-        while not self.GAME_CLOSED:
+        while not self.game_closed:
             # Update clock game time by framerate
-            self.clock.tick(self.FPS)
+            self.clock.tick(CONST.FPS)
             # Call method listen keyboard event
             self.__gamepad()
             # Method call all object.update() or method to update
             self.__update(self.clock.get_time())
             # Refresh screen background color
-            self.screen.fill(self.GAME_SCREEN_BACKGROUND)
+            self.screen.fill(CONST.GAME_SCREEN_BACKGROUND)
             # Method updated all object.draw() or method to draw
             self.__draw(self.clock.get_time())
             # Pygame windows refresh
@@ -336,7 +345,7 @@ class GameController:
         # pause game 3sec
         time.sleep(3)
         # Exit Main Loop
-        self.GAME_CLOSED = True
+        self.game_closed = True
 
     def __update(self, dt):
         """ call all object.update() or method to update before draw.
@@ -359,12 +368,12 @@ class GameController:
         dt -- integer Deltatime time between 2 update Main Loop
 
         """
-        if self.MESSAGE:
-            if self.MESSAGE_TIME <= 1000:
-                self.MESSAGE_TIME += dt
+        if self.message:
+            if self.message_time <= 1000:
+                self.message_time += dt
             else:
-                self.MESSAGE_TIME = 0
-                self.MESSAGE = None
+                self.message_time = 0
+                self.message = None
 
     def __update_collision(self):
         """ Check if have a collision. """
@@ -390,7 +399,7 @@ class GameController:
         elif cell == "9":
             if self.key_door: # Key found
                 # Message to show
-                self.MESSAGE = "a ouvert la porte."
+                self.message = "a ouvert la porte."
                 # Change cell image by ground
                 self.map.make_cell(*self.next_position, "0")
                 # Reste key found
@@ -398,7 +407,7 @@ class GameController:
 
             else: # Key not found
                 # Message to show
-                self.MESSAGE = self.map.read_message(cell)
+                self.message = self.map.read_message(cell)
                 # Reset Next move
                 self.move_x = 0
                 self.move_y = 0
@@ -406,7 +415,7 @@ class GameController:
         # Event for collision with key
         elif cell == "8":
             # Message to show
-            self.MESSAGE = self.map.read_message(cell)
+            self.message = self.map.read_message(cell)
             # Change cell image by ground
             self.map.make_cell(*self.next_position, "0")
             # Key found
@@ -415,7 +424,7 @@ class GameController:
         # Event for collision with items
         elif cell in self.map.map_items:
             # Message to show
-            self.MESSAGE = self.map.read_message(cell)
+            self.message = self.map.read_message(cell)
             # Change cell image by ground
             self.map.make_cell(*self.next_position, "0")
             # Add item found
@@ -426,19 +435,19 @@ class GameController:
             # Ending game level
             self.game_end = True
             # Message to show
-            self.MESSAGE = "Niveau terminé !!!"
+            self.message = "Niveau terminé !!!"
 
         # Event for collision with enemy
         elif cell == "3":
             if len(self.items) == 3:
                 # Message to show
-                self.MESSAGE = self.map.read_message(cell)
+                self.message = self.map.read_message(cell)
                 # Change cell image by ground
                 self.map.make_cell(*self.next_position, "0")
 
             else:
                 # Message to show
-                self.MESSAGE = "meurt sans pouvoir rien faire ..."
+                self.message = "meurt sans pouvoir rien faire ..."
                 # Ending game GameOver
                 self.game_end = True
 
@@ -471,9 +480,9 @@ class GameController:
         dt -- integer Deltatime time between 2 update Main Loop
 
         """
-        if self.MESSAGE:
+        if self.message:
             # Compose message with hero name
-            message = self.hero.hero_name + " " + self.MESSAGE
+            message = self.hero.hero_name + " " + self.message
             # Define text font size with default font
             Font = pygame.font.Font(None, 30)
             # Get message box object
@@ -495,11 +504,11 @@ class GameController:
         # get map position
         x, y = self.map.map_position
         # Set position y of image up map
-        y -= 21
+        y -= CONST.CELL_HEIGHT + 1
         # Draw image on screen
         self.screen.blit(img, (x, y))
         # Move next position x to right
-        x += 22
+        x += CONST.CELL_WIDTH + 2
         # Loop items found
         for item in self.items:
             # Create image object
@@ -507,7 +516,7 @@ class GameController:
             # Draw image on map
             self.screen.blit(img, (x, y))
             # Move next item position to right
-            x += 22
+            x += CONST.CELL_WIDTH + 2
 
     def __gamepad(self):
         """ Event on keybord. """
@@ -517,7 +526,7 @@ class GameController:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # If user clic on cross windows
-                self.GAME_CLOSED = True # exit game
+                self.game_closed = True # exit game
             if event.type == pygame.KEYDOWN: # User clic a touch
                 if event.key == pygame.K_LEFT: # User clic left
                     self.move_x = -1
